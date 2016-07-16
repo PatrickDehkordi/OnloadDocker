@@ -1,17 +1,10 @@
 # OnloadDocker
 Open Onload in Docker
-• Running Onload in a Docker Container means the Onload accelerated application benefits from the inherent isolation policy of the virtualized environment.
-• There is minimal degradation of latency and throughput performance. Near native network I/O performance is possible because there is direct hardware access (no hardware emulation) with the guest kernel (and host kernel) being bypassed.
-• Multiple containers can co-exist on the same host and all are isolated from each other.
-
-Simple install:
-%docker run --net=host --device=/dev/onload --device=/dev/onload_epoll -it solarflare/onload /bin/bash
-
-Host setup:
+Running Onload in a Docker Container accelerates the application with the benefits from the inherent isolation policy of the virtualized environment. There is minimal degradation of latency and throughput. Near native network I/O performance is possible because there is direct hardware access (no hardware emulation) with the guest kernel (and host kernel) being bypassed. Multiple containers can co-exist on the same host and all are isolated from each other.
+-------------
+# Host setup:
 1) Add a Docker repo:
-
-#vi /etc/yum/repos.d/dokcer.repo
-
+%vi /etc/yum/repos.d/dokcer.repo
 [dockerrepo]
 name=Docker Repository
 baseurl=https://yum.dockerproject.org/repo/main/centos/7
@@ -20,12 +13,210 @@ gpgcheck=1
 gpgkey=https://yum.dockerproject.org/gpg
 
 2) Install Docker:
-
-#yum install docker-engine
+%yum install docker-engine
 
 3)Start the daemon:
-
-#service docker start
+service docker start
 
 4) Install the latest version of Onload
 Make sure the version of Onload in container matches the one on the host.
+-------------
+
+#OpenOnload-201606 Release Notes
+===============================
+
+This is a major update release that adds new features to OpenOnload.
+
+A brief summary of new features and known limitations are included
+below - for more details see the Onload user guide.
+
+See the ChangeLog for a list of bugs fixed.
+
+
+Linux distribution support
+--------------------------
+
+This Onload package is supported on:
+- Red Hat Enterprise Linux 5.10 - 5.11
+- Red Hat Enterprise Linux 6.6 - 6.8
+- Red Hat Enterprise Linux 7.0 - 7.2
+- Red Hat Messaging Realtime and Grid 2.4, 2.5
+- SuSE Linux Enterprise Server 11 sp2, sp3, sp4
+- SuSE Linux Enterprise Realtime Extension 11
+- SuSE Linux Enterprise Server 12 base and sp1
+- Canonical Ubuntu Server LTS 14.04
+- Canonical Ubuntu Server 15.10, 16.04
+- Debian 7 "Wheezy"
+- Debian 8 "Jessie"
+- Linux kernels 2.6.32 - 4.6
+
+
+Solarflare Flareon Ultra 8500 NICs
+----------------------------------
+
+This release adds full support for the new range of Solarflare Flareon
+Ultra 8500-series NICs.  If you are interested in learning more about
+the improved performance and features available please contact
+sales@solarflare.com
+
+
+New configuration options
+-------------------------
+
+EF_TCP_LISTEN_REPLIES_BACK: When a TCP listening socket replies to an
+incoming SYN, this option forces Onload to ignore the route table and
+to reply on the same network interface the SYN was received from.
+This mode could be considered as a way to achieve some basic
+source-based routing
+
+EF_HIGH_THROUGHPUT_MODE: This option causes onload to optimise the
+stack and VI configuration for throughput at the cost of latency
+
+In addition, some of the control-plane module options have been moved
+or renamed - please see the control plane section below for details.
+
+
+ef_vi Transmit Alternatives API
+-------------------------------
+
+This release adds a new method for sending data to the ef_vi API.
+Using the ef_vi_transmit_alt* functions a set of alternative packets
+can be queued in the NIC ready to be sent.  Once the decision about
+which alternative set of packets to send is made, it can be released
+onto the network with extremely low latency.
+
+Please refer to the ef_vi documentation for further details.  This API
+is supported on 8000-series NICs and later.
+
+
+ef_vi Capabilities API
+----------------------
+
+This release adds support for an ef_vi API that allows users to query
+at runtime what features and capabilities are available on the
+hardware as it is currently configured.  This allows applications to be
+built once, then run on a variety of Solarflare NICs and tailor the
+feature set they use to the current hardware capabilities.
+
+Please see src/include/etherfabric/capabilites.h for the API
+documentation and details of the features that can currently be queried.
+
+
+IPv6 ef_vi filtering
+--------------------
+
+This release adds support for IPv6 filters in ef_vi.  Please see the
+documentation for ef_filter_spec_set_ip6_local() and
+ef_filter_spec_set_ip6_full() for further details.  This is supported
+on 7000-series NICs and later.
+
+
+onload_thread_get_spin extension API
+------------------------------------
+
+This release adds a new extensions API call to query per-thread spin
+settings, to complement the existing onload_thread_set_spin().
+onload_thread_get_spin() retrieves the spin settings previously
+configured via onload_thread_set_spin().
+
+Please refer to src/include/onload/extensions.h for the API documentation.
+
+
+Teamd support for mixed bonds
+-----------------------------
+
+OpenOnload-201509 added support for bonds configured using teamd in
+addition to the long-standing bonding module.  It has recently become
+apparent that Onload is not correctly dealing with teamd-configured
+bonds that have a mix of Solarflare and non-Solarflare interfaces.
+Onload should recognise these as unacceleratable but currently will
+attempt to accelerate traffic on the Solarflare interfaces in the
+bond, which may lead to unexpected behaviour should the bond failover
+to a non-Solarflare interface.
+
+We will address this in a future update release.  To work around the
+problem we recommend using the bonding module to configure bonds that
+have a mix of Solarflare and non-Solarflare interfaces in them.
+
+
+sfc_resource /proc file name change
+-----------------------------------
+
+To avoid a naming collision when interfaces are renamed the files that
+used to be at /proc/driver/sfc_resource/ethX/pdY have moved to
+/proc/driver/sfc_resource/devices/0000:0Z.00.0/pdY
+
+
+New onload_cplane module
+------------------------
+
+This release of Onload adds a new binary module named onload_cplane.
+This new module provides some of the module parameters that used to be
+handled by other solarflare modules:
+- oo_bond_poll_base 
+- oo_igmp_on_failover 
+- max_layer2_interfaces 
+- max_routes
+- max_neighs 
+- oo_teaming_dump_period
+- oo_teaming_listen_updates
+
+In previous versions max_layer2_interfaces was used to limit the size
+of both the llap table (table of IP interfaces) and ipif table (table
+of IP addresses).  This has now been separated and max_local_addrs has
+been added to control the size of the ipif table.
+
+The onload_cplane module also takes a new parameter cplane_debug_bits,
+similar to the existing oo_debug_bits parameter, to control the level
+of debug logging produced.
+
+A number of /proc files have been changed:
+- All /proc/driver/onload/mib-* have moved to
+ /proc/driver/onload_cplane/mib-*; the files themselves are exactly the
+ same as previously, apart from /proc/driver/onload/mib-hwport which 
+ has been removed.
+- /proc/driver/onload/cplane has been renamed to
+ /proc/driver/onload_cplane/stats.
+- /proc/driver/onload_cplane/version is a new file containing version
+ information of the onload_cplane module.
+
+Some build-time configuration options have been effectively removed as
+they are set at build time of the onload_cplane module:
+- CI_CFG_MAX_REGISTER_INTERFACES
+- CI_CFG_TEAMING
+
+Finally, some Linux kernel versions break the API symbols used by
+Onload and users should upgrade to a later release where these kernel
+bugs have been fixed:
+- 4.2.0 and 4.2.1: please use 4.2.2 or later
+- 3.7.x and 3.8.x: please use 3.7.10 or >=3.9
+- 3.0.9-rt* from MRG2.1: please use later MRG kernel
+
+
+sfc_aoe module
+--------------
+
+The sfc_aoe module is no longer included in the Onload distribution.
+This will in future be distributed separately to allow independent
+releases of these two products. If this causes issues please contact
+support@solarflare.com 
+
+
+Interrupt-driven event burst
+----------------------------
+
+During testing for this release we have encountered a rare issue when
+running Onload in interrupt-driven mode with multiple threads or
+processes sharing a stack and using both ports of a NIC at high
+traffic rates.  In this situation Onload can cause the NIC to generate
+a large burst of events which in turn will overflow the net driver's
+event queue.  Due to the timings involved this mainly affects the new
+8500 series NICs, but can in theory apply to earlier generations of
+hardware.  It is not a new issue, so if you have not experienced this
+on previous Onload releases there is no additional risk in upgrading
+to this release.  The symptoms include warnings from the kernel driver
+about driverlink handle_event() operations taking a long time and MCDI
+requests completing without an event.  This may cause the driver to
+reset the NIC in an attempt to recover.  Solarflare have a fix to
+resolve this that is currently being tested and will be included in an
+update release.
