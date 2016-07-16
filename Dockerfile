@@ -1,7 +1,7 @@
 #OpenOnload Container
 FROM centos:latest
 MAINTAINER Patrick Dehkordi (patrick.dehkordi@gmail.com)
-ADD http://www.openonload.org/download/openonload-201509.tgz .
+ADD http://www.openonload.org/download/openonload-201606.tgz .
 RUN yum install -y perl
 RUN yum install -y autoconf
 RUN yum install -y automake
