@@ -1,5 +1,5 @@
 #OpenOnload Container
-FROM centos:latest
+FROM centos:7.1.1503
 MAINTAINER Patrick Dehkordi (patrick.dehkordi@gmail.com)
 ADD http://www.openonload.org/download/openonload-201509.tgz .
 RUN yum install -y perl
