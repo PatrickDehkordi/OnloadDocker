@@ -17,7 +17,7 @@ RUN yum install -y kernel-devel
 RUN yum install -y libgcc.i686
 RUN yum install -y libpcap-devel
 RUN yum install -y valgrind-devel 
-RUN yum install which
+RUN yum install -y which
 RUN tar -zxvf openonload-201606.tgz
 RUN cd openonload-201606/scripts
 RUN ./onload_build --user
