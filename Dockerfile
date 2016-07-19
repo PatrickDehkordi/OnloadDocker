@@ -19,9 +19,9 @@ RUN yum install -y libpcap-devel
 RUN yum install -y valgrind-devel 
 RUN yum install which
 RUN tar -zxvf openonload-201606.tgz
-RUN cd openonload-201606
-RUN /openonload-201509/scripts/onload_build --user
-RUN /openonload-201509/scripts/onload_install --userfiles --nobuild
+RUN cd openonload-201606/scripts
+RUN ./onload_build --user
+RUN ./onload_install --userfiles --nobuild
 LABEL RUN="docker run -d --device=/dev/onload –device=/dev/onload_epoll --name NAME --net=host -e NAME=NAME -e IMAGE=IMAGE IMAGE"
 # Onload will require appropriate Solarflare network adapters
 CMD onload
