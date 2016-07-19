@@ -2,10 +2,11 @@
 FROM centos:7.2.1511
 MAINTAINER Patrick Dehkordi
 ADD http://www.openonload.org/download/openonload-201606.tgz .
-RUN yum install -y perl
+#RUN yum install -y perl
 RUN yum install -y autoconf
 RUN yum install -y automake
 RUN yum install -y libtool
+RUN yum install -y perl
 #RUN yum install -y tar
 #RUN yum install -y gcc
 RUN yum install -y make
