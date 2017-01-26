@@ -1,30 +1,14 @@
-#OpenOnload 201606 Container
-FROM centos:7.2.1511
+#OpenOnload 201606-u1 Container on Centos 7.3
+FROM centos:7.3.1611
 MAINTAINER Patrick Dehkordi
-ADD http://www.openonload.org/download/openonload-201606.tgz .
-RUN yum clean all
-RUN yum install -y perl
-RUN yum clean all
-RUN rpm --rebuilddb
-RUN yum install -y autoconf
-RUN yum install -y automake
-RUN yum install -y libtool
-#RUN yum install -y tar
-#RUN yum install -y gcc
-RUN yum install -y make
-RUN yum install -y net-tools
-RUN yum install -y ethtool
-# additional libs
-RUN yum install -y glibc-devel.i686
-RUN yum install -y kernel-devel
-RUN yum install -y libgcc.i686
-RUN yum install -y libpcap-devel
-RUN yum install -y valgrind-devel 
-RUN yum install -y which
-RUN tar -zxvf openonload-201606.tgz
-RUN cd openonload-201606/scripts
+ADD http://www.openonload.org/download/openonload-201606-u1.tgz .
+RUN yum install -y ethtool net-tools which file make wget perl
+RUN yum install -y kernel-devel libpcap-devel python-devel valgrind-devel
+RUN yum install -y libgcc.i686 glibc-devel.i686 glibc-devel.x86_64 gcc
+RUN yum install -y autoconf automake libtool gettext
+RUN tar -zxvf openonload-201606-u1.tgz
+RUN cd openonload-201606-u1/scripts
 RUN ./onload_build --user
 RUN ./onload_install --userfiles --nobuild
 LABEL RUN="docker run -d --device=/dev/onload –device=/dev/onload_epoll --name NAME --net=host -e NAME=NAME -e IMAGE=IMAGE IMAGE"
-# Onload will require appropriate Solarflare network adapters
-CMD onload
+# Onload will require appropriate Solarflare network adapter
